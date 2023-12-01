@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<head>
+    <script type='module'>
+        import { signal } from './src/signal.js';
+
+        const [ counter, setCounter ] = signal(0);
+
+        function handleClick() {
+            console.log('current counter', counter())
+
+        }
+
+        document.getElementById('clickerbtn').click = handleClick();
+
+    </script>
+</head>
+<body>
+    <h1>reactivity example</h1>
+    <button id="clickerbtn">clicker</button>
+</body>
