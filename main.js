@@ -16,11 +16,11 @@ function increment() {
   setCounter(curr + 1);
 }
 
-const template = `<button id="btn" r-click="{() => setCounter(counter() + 1)}">increment</button>
+const template = `<button id="btn">increment</button>
 <p>
   Counter value:
-  <span id="counterval">
-    ${counter.prototype.sigd}
+  <span r-dep="${counter.prototype.sigd}">
+    ${counter()}
   </span>
 </p>`
 

@@ -54,16 +54,22 @@ function _parse(root) {
     const child = root.childNodes[i]
 
     if(child.childNodes.length === 0) {
-
       const content = child._rawText;
-      if(pairing.has(Number(content))) {
-        const updator = () => {
-          const parent = document.getElementById(child.parentNode.id);
-          const c = pairing2.get(Number(content))
-          parent.innerHTML = c();
+      console.log('child: ', child)
+      console.log('parnet: ', child.parentNode.rawAttrs)
+      if(child.parentNode.rawAttrs?.includes("r-dep")) {
+        const key = child.parentNode.rawAttrs.split("=")[1].replaceAll('"', '')
+        console.log('key: ', Number(key))
+        if(pairing.has(Number(key))) {
+          console.log('has paring')
+          const updator = () => {
+            const parent = document.querySelector(`[r-dep="${Number(key)}"]`);
+            const c = pairing2.get(Number(key))
+            parent.innerHTML = c();
+          }
+          const currList = pairing.get(Number(key));
+          pairing.set(Number(key), [ ...currList, updator ])
         }
-        const currList = pairing.get(Number(content));
-        pairing.set(Number(content), [ ...currList, updator ])
       }
     }
     else {
