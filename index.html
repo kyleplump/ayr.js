@@ -5,16 +5,31 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
-    <script type="module" src="/main.js"></script>
+    <!-- <script type="module" src="/main.js"></script> -->
+    <script type="module">
+      import { sig, RApp } from './rapp.js'
 
+      const [ counter, setCounter ] = sig(0);
+      console.log('window: ', Object.keys({counter}))
+      console.log(window.tester)
+      console.log('same: ', counter == window.tester)
+
+      const el = document.getElementById('test')
+      console.log('el: ', el)
+      const t = eval(el.innerHTML);
+      console.log('t: ', t)
+
+      RApp('#body')
+
+    </script>
   </head>
   <body id="body">
-    <!-- <button id="btn" r-click="{() => setCounter(counter() + 1)}">increment</button>
+    <button id="btn" r-click="{ () => counter() + 1 }">increment</button>
     <p>
       Counter value:
-      <span id="counterval">
+      <span id="test">
         {{ counter() }}
       </span>
-    </p> -->
+    </p>
   </body>
 </html>

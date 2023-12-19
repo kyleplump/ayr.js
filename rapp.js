@@ -4,20 +4,21 @@ const pairing = new Map();
 const pairing2 = new Map();
 
 export function RApp(mount) {
-  const root = parse(mount);
-  console.log('root: ', root)
-  console.log('pariing: ', pairing)
+  const t = document.querySelector(mount)
+  const root = parse(t.innerHTML);
+
   _parse(root)
-  document.body.innerHTML = mount
+  // document.body.innerHTML = mount
 }
 
 export function sig(prim) {
 
   let _val = prim;
   const id = Math.random();
+  console.log('in signal: ', this)
 
   function val() {
-    console.log('called')
+    console.log('called', id)
     return _val;
   }
 
@@ -36,7 +37,7 @@ export function sig(prim) {
   val.prototype.sigd = id;
   pairing.set(id, [])
   pairing2.set(id, val)
-
+  window.tester = val
   return [ val, setVal ]
 }
 
@@ -57,20 +58,26 @@ function _parse(root) {
       const content = child._rawText;
       console.log('child: ', child)
       console.log('parnet: ', child.parentNode.rawAttrs)
-      if(child.parentNode.rawAttrs?.includes("r-dep")) {
-        const key = child.parentNode.rawAttrs.split("=")[1].replaceAll('"', '')
-        console.log('key: ', Number(key))
-        if(pairing.has(Number(key))) {
-          console.log('has paring')
-          const updator = () => {
-            const parent = document.querySelector(`[r-dep="${Number(key)}"]`);
-            const c = pairing2.get(Number(key))
-            parent.innerHTML = c();
-          }
-          const currList = pairing.get(Number(key));
-          pairing.set(Number(key), [ ...currList, updator ])
-        }
+      if(child._rawText.includes('{{')) {
+        const center = child._rawText.split('{{')[1].split('}}')[0]
+        console.log('center: ', center)
+        eval(center)
+        
       }
+      // if(child.parentNode.rawAttrs?.includes("r-dep")) {
+      //   const key = child.parentNode.rawAttrs.split("=")[1].replaceAll('"', '')
+      //   console.log('key: ', Number(key))
+      //   if(pairing.has(Number(key))) {
+      //     console.log('has paring')
+      //     const updator = () => {
+      //       const parent = document.querySelector(`[r-dep="${Number(key)}"]`);
+      //       const c = pairing2.get(Number(key))
+      //       parent.innerHTML = c();
+      //     }
+      //     const currList = pairing.get(Number(key));
+      //     pairing.set(Number(key), [ ...currList, updator ])
+      //   }
+      // }
     }
     else {
       _parse(child)
