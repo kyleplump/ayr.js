@@ -1,20 +1,34 @@
-<!DOCTYPE html>
-<head>
-    <script type='module'>
-        import { signal } from './src/signal.js';
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <!-- <script type="module" src="/main.js"></script> -->
+    <script type="module">
+      import { sig, RApp } from './rapp.js'
 
-        const [ counter, setCounter ] = signal(0);
-
-        function handleClick() {
-            console.log('current counter', counter())
-
+      RApp({
+        root: '#body',
+        state: {
+          counter: 0
+        },
+        effects: {
+          updateCounter: () => {
+            counter = counter + 1;
+          }
         }
-
-        document.getElementById('clickerbtn').click = handleClick();
+      })
 
     </script>
-</head>
-<body>
-    <h1>reactivity example</h1>
-    <button id="clickerbtn">clicker</button>
-</body>
+  </head>
+  <body id="body">
+    <button id="btn" r-click="{ updateCounter }">increment</button>
+    <p>
+      Counter value:
+      <span id="test" r-data="{ counter }">
+      </span>
+    </p>
+  </body>
+</html>
