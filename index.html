@@ -9,26 +9,20 @@
     <script type="module">
       import { sig, RApp } from './rapp.js'
 
-      const [ counter, setCounter ] = sig(0);
-      console.log('window: ', Object.keys({counter}))
-      console.log(window.tester)
-      console.log('same: ', counter == window.tester)
-
-      const el = document.getElementById('test')
-      console.log('el: ', el)
-      const t = eval(el.innerHTML);
-      console.log('t: ', t)
-
-      RApp('#body')
+      RApp({
+        root: '#body',
+        state: {
+          counter: 0
+        }
+      })
 
     </script>
   </head>
   <body id="body">
-    <button id="btn" r-click="{ () => counter() + 1 }">increment</button>
+    <button id="btn" r-click="{ () => counter + 1 }">increment</button>
     <p>
       Counter value:
-      <span id="test">
-        {{ counter() }}
+      <span id="test" r-data="{ counter }">
       </span>
     </p>
   </body>

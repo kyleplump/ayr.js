@@ -1,21 +1,42 @@
 import { parse } from 'node-html-parser';
 
-const pairing = new Map();
-const pairing2 = new Map();
+const pairing = new Map(); // dependencies { signalID: dependencyArray }
+const signalToSigIDMap = new Map(); // { signalTextName: signalID }
+const signalList = new Map()// {signalID: signal itself}
 
-export function RApp(mount) {
-  const t = document.querySelector(mount)
+let state = {};
+
+
+export function RApp(config) {
+  console.log('config: ', config)
+  state = config.state;
+
+  Object.keys(state).forEach((s) => {
+    console.log('state name: ', s)
+    const signal = sig(state[s]); // create signal w/ provided default
+    signalToSigIDMap.set(s, signal[0].prototype.sigd);
+    signalList.set(signal[0].prototype.sigd, signal)
+  })
+
+  const t = document.querySelector(config.root)
   const root = parse(t.innerHTML);
+  const p = _parse(root)
+  t.innerHTML = p.toString();
+  console.log('p: ', p.toString())
+  // run all dependencies
+  pairing.forEach((c, b) => {
+    for(let i = 0, len = c.length; i < len; i ++) {
+      const currdep = c[i]
+      currdep();
+    }
+  })
 
-  _parse(root)
-  // document.body.innerHTML = mount
 }
 
 export function sig(prim) {
 
   let _val = prim;
   const id = Math.random();
-  console.log('in signal: ', this)
 
   function val() {
     console.log('called', id)
@@ -36,7 +57,6 @@ export function sig(prim) {
 
   val.prototype.sigd = id;
   pairing.set(id, [])
-  pairing2.set(id, val)
   window.tester = val
   return [ val, setVal ]
 }
@@ -50,37 +70,35 @@ export function eff(callback, dependencies) {
 }
 
 function _parse(root) {
-
   for(let i = 0; i < root.childNodes.length; i ++) {
     const child = root.childNodes[i]
+    // console.log('checking child: ', child)
+    if(child.rawAttrs && child.rawAttrs.includes('r-data')) {
 
-    if(child.childNodes.length === 0) {
-      const content = child._rawText;
-      console.log('child: ', child)
-      console.log('parnet: ', child.parentNode.rawAttrs)
-      if(child._rawText.includes('{{')) {
-        const center = child._rawText.split('{{')[1].split('}}')[0]
-        console.log('center: ', center)
-        eval(center)
-        
+      const data = child.rawAttrs.split('r-data')[1].split("{")[1].split("}")[0].trim();
+      console.log('state is: ', data)
+      const id = Math.random();
+      child.rawAttrs += ` data-rid="${id}"`;
+
+      // get sigd
+      const sigd = signalToSigIDMap.get(data);
+      const signalItself = signalList.get(sigd);
+
+      // add manual updator
+      const updator = () => {
+        const element = document.querySelector(`[data-rid="${id}"]`)
+        console.log('selector: ', `[data-rid="${id}"]`)
+        element.innerHTML = signalItself[0]();
       }
-      // if(child.parentNode.rawAttrs?.includes("r-dep")) {
-      //   const key = child.parentNode.rawAttrs.split("=")[1].replaceAll('"', '')
-      //   console.log('key: ', Number(key))
-      //   if(pairing.has(Number(key))) {
-      //     console.log('has paring')
-      //     const updator = () => {
-      //       const parent = document.querySelector(`[r-dep="${Number(key)}"]`);
-      //       const c = pairing2.get(Number(key))
-      //       parent.innerHTML = c();
-      //     }
-      //     const currList = pairing.get(Number(key));
-      //     pairing.set(Number(key), [ ...currList, updator ])
-      //   }
-      // }
+
+      let signaldeps = pairing.get(sigd);
+      signaldeps.push(updator);
+      pairing.set(sigd, signaldeps)
     }
     else {
       _parse(child)
     }
   }
+
+  return root
 }
