@@ -13,13 +13,18 @@
         root: '#body',
         state: {
           counter: 0
+        },
+        effects: {
+          updateCounter: () => {
+            counter = counter + 1;
+          }
         }
       })
 
     </script>
   </head>
   <body id="body">
-    <button id="btn" r-click="{ () => counter + 1 }">increment</button>
+    <button id="btn" r-click="{ updateCounter }">increment</button>
     <p>
       Counter value:
       <span id="test" r-data="{ counter }">

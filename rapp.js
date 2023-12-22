@@ -3,16 +3,15 @@ import { parse } from 'node-html-parser';
 const pairing = new Map(); // dependencies { signalID: dependencyArray }
 const signalToSigIDMap = new Map(); // { signalTextName: signalID }
 const signalList = new Map()// {signalID: signal itself}
-
+let gc = {};
 let state = {};
-
 
 export function RApp(config) {
   console.log('config: ', config)
+  gc = config;
   state = config.state;
 
   Object.keys(state).forEach((s) => {
-    console.log('state name: ', s)
     const signal = sig(state[s]); // create signal w/ provided default
     signalToSigIDMap.set(s, signal[0].prototype.sigd);
     signalList.set(signal[0].prototype.sigd, signal)
@@ -22,7 +21,7 @@ export function RApp(config) {
   const root = parse(t.innerHTML);
   const p = _parse(root)
   t.innerHTML = p.toString();
-  console.log('p: ', p.toString())
+
   // run all dependencies
   pairing.forEach((c, b) => {
     for(let i = 0, len = c.length; i < len; i ++) {
@@ -74,9 +73,7 @@ function _parse(root) {
     const child = root.childNodes[i]
     // console.log('checking child: ', child)
     if(child.rawAttrs && child.rawAttrs.includes('r-data')) {
-
       const data = child.rawAttrs.split('r-data')[1].split("{")[1].split("}")[0].trim();
-      console.log('state is: ', data)
       const id = Math.random();
       child.rawAttrs += ` data-rid="${id}"`;
 
@@ -94,6 +91,11 @@ function _parse(root) {
       let signaldeps = pairing.get(sigd);
       signaldeps.push(updator);
       pairing.set(sigd, signaldeps)
+    }
+    else if(child.rawAttrs && child.rawAttrs.includes('r-click')) {
+      const data = child.rawAttrs.split('r-click')[1].split("{")[1].split("}")[0].trim();
+      console.log('clickEvent: ', data, gc.effects)
+
     }
     else {
       _parse(child)
