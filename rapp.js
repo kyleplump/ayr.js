@@ -5,11 +5,38 @@ const signalToSigIDMap = new Map(); // { signalTextName: signalID }
 const signalList = new Map()// {signalID: signal itself}
 let gc = {};
 let state = {};
+let geffects = {}
 
-export function RApp(config) {
-  console.log('config: ', config)
+export function RComponent(config) {
   gc = config;
   state = config.state;
+
+  console.log("config: ", config)
+  // console.log('hello: ', config.effects().updateCounter())
+  const effects = gc.effects();
+  console.log('gc.state: ', gc.state)
+  geffects = effects;
+
+  // REFLECTION STUFF --------------
+  // for(let [key, value] of Object.entries(geffects)) {
+  //   if(typeof value === 'function') {
+  //     let fn =geffects[key];
+  //     Object.assign(geffects, {
+  //       [key]: function(...args) {
+  //         // check 'this' value as deps
+  //         console.log('this: ', this)
+  //         Object.keys(this).forEach((k) => {
+  //           console.log('foud state dep: ', k, signalToSigIDMap.get(k))
+  //           const sigd = signalToSigIDMap.get(k)
+  //           const actualSignal = signalList.get(sigd);
+  //           console.log('actual signal: ', actualSignal)
+  //         })
+  //         console.log("in reflection!: ")
+  //         return Reflect.apply(fn,geffects, args)
+  //       }
+  //     })
+  //   }
+  // }
 
   Object.keys(state).forEach((s) => {
     const signal = sig(state[s]); // create signal w/ provided default
@@ -25,6 +52,7 @@ export function RApp(config) {
   // run all dependencies
   pairing.forEach((c, b) => {
     for(let i = 0, len = c.length; i < len; i ++) {
+      console.log('curr dep: ', c[i])
       const currdep = c[i]
       currdep();
     }
@@ -50,7 +78,6 @@ export function sig(prim) {
     for(let i = 0, len = currdeps.length; i < len; i ++) {
       const currdep = currdeps[i]
       currdep();
-      // window.document.body.innerHTML = window.document.body.innerHTML.replace(/{{(.*?)}}/g, _val)
     }
   }
 
@@ -68,34 +95,75 @@ export function eff(callback, dependencies) {
   }
 }
 
+function createUpdator(child) {
+  console.log("create updator called for: ",child)
+  const data = child.rawAttrs.split('r-data')[1].split("{")[1].split("}")[0].trim();
+  const id = Math.random();
+  if(child.rawAttrs.includes('data-rid')) {
+    //update id (nested component roots?)
+    const i = child.rawAttrs.split('data-rid="')[1].split('"')[0];
+    child.rawAttrs = child.rawAttrs.replaceAll(i, id)
+    console.log('new: ', child.rawAttrs)
+  }
+  else {
+    child.rawAttrs += ` data-rid="${id}"`;
+  }
+  console.log("id: ", id)
+  // get sigd
+  const sigd = signalToSigIDMap.get(data);
+  const signalItself = signalList.get(sigd);
+
+  // add manual updator
+  const updator = () => {
+    // console.log("updater called")
+    const element = document.querySelector(`[data-rid="${id}"]`)
+
+    console.log('updator called', signalItself[0]() )
+    console.log('e;lemetn: ', element, id)
+    element.innerHTML = signalItself[0]();
+  }
+
+  let signaldeps = pairing.get(sigd);
+  if(!signaldeps) return;
+  signaldeps.push(updator);
+  pairing.set(sigd, signaldeps)
+}
+
 function _parse(root) {
   for(let i = 0; i < root.childNodes.length; i ++) {
     const child = root.childNodes[i]
     // console.log('checking child: ', child)
     if(child.rawAttrs && child.rawAttrs.includes('r-data')) {
-      const data = child.rawAttrs.split('r-data')[1].split("{")[1].split("}")[0].trim();
-      const id = Math.random();
-      child.rawAttrs += ` data-rid="${id}"`;
-
-      // get sigd
-      const sigd = signalToSigIDMap.get(data);
-      const signalItself = signalList.get(sigd);
-
-      // add manual updator
-      const updator = () => {
-        const element = document.querySelector(`[data-rid="${id}"]`)
-        console.log('selector: ', `[data-rid="${id}"]`)
-        element.innerHTML = signalItself[0]();
-      }
-
-      let signaldeps = pairing.get(sigd);
-      signaldeps.push(updator);
-      pairing.set(sigd, signaldeps)
+      createUpdator(child)
     }
     else if(child.rawAttrs && child.rawAttrs.includes('r-click')) {
       const data = child.rawAttrs.split('r-click')[1].split("{")[1].split("}")[0].trim();
-      console.log('clickEvent: ', data, gc.effects)
+      console.log('clickEvent: ', data, geffects)
 
+      if(Object.keys(geffects).includes(data)) {
+        console.log('child: ', geffects[data])
+        const c = function() {
+          geffects[data].bind(gc.state)();
+          // gc.state is updated here
+          console.log('gc: ', gc.state)
+
+          Object.keys(gc.state).forEach((s) => {
+              const signalTextName = s; // create signal w/ provided default
+              const f = signalToSigIDMap.get(signalTextName);
+              const deps = pairing.get(f);
+              const signalItself = signalList.get(f)
+              signalItself[1](gc.state[s])
+              console.log('f: ', deps)
+              for(let i = 0; i < deps.length; i ++) {
+                deps[i]()
+              }
+          })
+        }
+        const fid = (Math.random() + 1).toString(36).substring(7);
+
+        window[`${fid}`] = c;
+        child.rawAttrs += ` onclick="${fid}()"`
+      }
     }
     else {
       _parse(child)

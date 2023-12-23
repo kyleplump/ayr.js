@@ -7,16 +7,33 @@
     <title>Vite App</title>
     <!-- <script type="module" src="/main.js"></script> -->
     <script type="module">
-      import { sig, RApp } from './rapp.js'
+      import { RComponent } from './rapp.js'
 
-      RApp({
-        root: '#body',
+      RComponent({
+        root: '#comp1',
         state: {
           counter: 0
         },
-        effects: {
-          updateCounter: () => {
-            counter = counter + 1;
+        effects: function() {
+
+          return {
+            updateCounter: () => {
+              this.state.counter  = this.state.counter + 1;
+            }
+          }
+        },
+      })
+
+      RComponent({
+        root: '#comp2',
+        state: {
+          innerCounter: 100
+        },
+        effects: function() {
+          return {
+            decrementCounter: () => {
+              this.state.innerCounter = this.state.innerCounter - 1;
+            }
           }
         }
       })
@@ -24,11 +41,22 @@
     </script>
   </head>
   <body id="body">
-    <button id="btn" r-click="{ updateCounter }">increment</button>
+   <div id='comp1'>
+    <button id="btn" r-click="{updateCounter}">increment</button>
     <p>
       Counter value:
-      <span id="test" r-data="{ counter }">
+      <span id="test" r-data="{counter}">
       </span>
     </p>
+   </div>
+
+    <div id='comp2'>
+      <button id="btn" r-click="{decrementCounter}">decrement</button>
+      <p>
+        Inner counter value:
+        <span r-data="{innerCounter}">
+        </span>
+      </p>
+    </div>
   </body>
 </html>
