@@ -1,0 +1,107 @@
+import { parse } from 'node-html-parser';
+import { createSignal } from './signal';
+
+// TODO
+// can probably just use queryselector for this and not html parser
+
+export function RComponent(config) {
+  // TODO: bidirectional map ?
+  const signals = new Map(); // { signalID: { dependencies: array, signal: signal Itself }}
+  const signalNameToSignalIDMap = new Map(); // { signalTextName: signalID }
+  let gc = config;
+  const effects = gc.effects();
+  let geffects = effects;
+
+  // read component declared state and create reactive state
+  Object.keys(config.state).forEach((stateEntry) => {
+    console.log("state entry: ", stateEntry)
+    const signal = createSignal(config.state[stateEntry]); // create signal w/ provided default
+    const signalID = signal[0].prototype.sigd; // get signal id off object proto
+    signalNameToSignalIDMap.set(stateEntry, signalID);
+    signals.set(signalID, { dependencies: [], signal });
+  })
+
+  // parse html and hydrate with anchors for reactivity
+  const documentMountPoint = document.querySelector(config.root)
+  const parsedRoot = parse(documentMountPoint.innerHTML);
+  const processedRoot = _parse(parsedRoot, geffects, gc.state)
+  // re-write dom as dom w/ anchors
+  documentMountPoint.innerHTML = processedRoot.toString();
+
+  // initial run of all effects
+  signals.forEach((signalData) => {
+    for(let i = 0, len = signalData.dependencies.length; i < len; i ++) {
+      const currdep = signalData.dependencies[i]
+      currdep();
+    }
+  });
+  
+  function createUpdator(child) {
+    const data = child.rawAttrs.split('r-data')[1].split("{")[1].split("}")[0].trim();
+    const id = Math.random();
+    if(child.rawAttrs.includes('data-rid')) {
+      //update id (nested component roots?)
+      const i = child.rawAttrs.split('data-rid="')[1].split('"')[0];
+      child.rawAttrs = child.rawAttrs.replaceAll(i, id)
+    }
+    else {
+      child.rawAttrs += ` data-rid="${id}"`;
+    }
+
+    // get sigd
+    const sigd = signalNameToSignalIDMap.get(data);
+    if(!sigd) return; // skip iteration for nested r-data possibilities
+
+    const { signal, dependencies } = signals.get(sigd);
+  
+    // add manual updator
+    const updator = () => {
+      const element = document.querySelector(`[data-rid="${id}"]`)
+      element.innerHTML = signal[0]();
+    }
+
+    if(!dependencies) return;
+    dependencies.push(updator);
+    signals.set(sigd, { signal, dependencies })
+  }
+  
+  function _parse(root) {
+    for(let i = 0; i < root.childNodes.length; i ++) {
+      const child = root.childNodes[i]
+      // console.log('checking child: ', child)
+      if(child.rawAttrs && child.rawAttrs.includes('r-data')) {
+        createUpdator(child)
+      }
+      else if(child.rawAttrs && child.rawAttrs.includes('r-click')) {
+        const handlerName = child.rawAttrs.split('r-click')[1].split("{")[1].split("}")[0].trim();
+  
+        if(Object.keys(geffects).includes(handlerName)) {
+
+          const c = function() {
+            // mutates the local gc.state closure variable, 'internal function state'
+            geffects[handlerName].bind(gc.state)();
+
+            // gc.state is updated here
+            // TODO: only update the state that this effect mutates
+            Object.keys(gc.state).forEach((s) => {
+                const signalTextName = s; // create signal w/ provided default
+                const f = signalNameToSignalIDMap.get(signalTextName);
+                const { dependencies, signal } = signals.get(f);
+                signal[1](gc.state[s], dependencies)
+
+            })
+          }
+          const fid = (Math.random() + 1).toString(36).substring(7);
+  
+          window[`${fid}`] = c;
+          child.rawAttrs += ` onclick="${fid}()"`
+        }
+      }
+      else {
+        _parse(child)
+      }
+    }
+  
+    return root
+  }
+}

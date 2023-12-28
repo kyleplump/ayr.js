@@ -2,17 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
-    <!-- <script type="module" src="/main.js"></script> -->
     <script type="module">
-      import { RComponent } from './rapp.js'
+      import { RComponent } from './rcomponent.js'
 
       RComponent({
         root: '#comp1',
         state: {
-          counter: 0
+          counter: 0,
         },
         effects: function() {
 
@@ -38,6 +36,20 @@
         }
       })
 
+      RComponent({
+        root: '#innercomponent',
+        state: {
+          value: 2
+        },
+        effects: function() {
+          return {
+            double: () => {
+              this.state.value = this.state.value * 2
+            }
+          }
+        }
+      })
+
     </script>
   </head>
   <body id="body">
@@ -45,8 +57,11 @@
     <button id="btn" r-click="{updateCounter}">increment</button>
     <p>
       Counter value:
-      <span id="test" r-data="{counter}">
-      </span>
+      <span id="test" r-data="{counter}" />
+      <p id="innercomponent">
+        <button r-click="{double}">double</button>
+        <span r-data="{value}" />
+      </p>
     </p>
    </div>
 
