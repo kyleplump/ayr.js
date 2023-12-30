@@ -10,7 +10,7 @@
       RComponent({
         root: '#comp1',
         state: {
-          counter: 0,
+          counter: 1,
         },
         effects: function() {
 
@@ -20,6 +20,17 @@
             }
           }
         },
+        dependants: function() {
+          return {
+            doubledCounter: () => {
+              // console.log('in doubledCOunter')
+              return this.state.counter * 2
+            },
+            tripledCounter: () => {
+              return this.state.counter * 3
+            }
+          }
+        }
       })
 
       RComponent({
@@ -57,11 +68,11 @@
     <button id="btn" r-click="{updateCounter}">increment</button>
     <p>
       Counter value:
-      <span id="test" r-data="{counter}" />
-      <p id="innercomponent">
-        <button r-click="{double}">double</button>
-        <span r-data="{value}" />
-      </p>
+      <span id="test" r-data="{counter}"></span>
+      doubled:
+      <span r-data="{doubledCounter}"></span>
+      tripled:
+      <span r-data="{tripledCounter}"></span>
     </p>
    </div>
 
@@ -72,6 +83,11 @@
         <span r-data="{innerCounter}">
         </span>
       </p>
+    </div>
+
+    <div id="innercomponent">
+      <button r-click="{double}">double the inner val</button>
+      <p r-data="{value}"></p>
     </div>
   </body>
 </html>
