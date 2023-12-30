@@ -1,14 +1,26 @@
-export function signal(defaultValue) {
+export function createSignal(initialValue) {
 
-    let _val = defaultValue;
-
-    function value() {
-        return _val; 
+    let _val = initialValue;
+    const id = Math.random();
+  
+    function val() {
+      console.log("retrieving val", _val)
+      return _val;
     }
-
-    function setValue() {
-        
+  
+    // currently need to take in dependencies at update
+    // to read local variables from calling RComponent - change
+    // if ever publically available
+    function setVal(newValue, dependencies) {
+      _val = newValue;
+      console.log('setting value', id, newValue)
+      // eval deps
+      for(let i = 0, len = dependencies.length; i < len; i ++) {
+        const currdep = dependencies[i]
+        currdep();
+      }
     }
-
-    return [ value, setValue ]
-}
+  
+    val.prototype.sigd = id;
+    return [ val, setVal ];
+  }
