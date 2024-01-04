@@ -5,7 +5,7 @@ import { createSignal } from './signal';
 // can probably just use queryselector for this and not html parser
 // somehow mirror gc.state whenever a signal is updated - avoid manually updating gc state
 
-export function RComponent(config) {
+export function AC(config) {
   // TODO: bidirectional map ?
   const signals = new Map(); // { signalID: { dependencies: array, signal: signal Itself }}
   const signalNameToSignalIDMap = new Map(); // { signalTextName: signalID }
@@ -16,7 +16,7 @@ export function RComponent(config) {
 
   // check for component dependants
   if(gc.dependants) {
-    // array of properties listed in component state that are affected by the execution of 
+    // array of properties listed in component state that are affected by the execution of
     // a dependant
     let modifiedStates = [];
 
@@ -32,7 +32,7 @@ export function RComponent(config) {
     // bind proxy to dependants function
     const derived = gc.dependants.bind({ state: proxyState })();
 
-    Object.keys(derived).forEach((dTextVal) => {      
+    Object.keys(derived).forEach((dTextVal) => {
       const derivedValue = derived[dTextVal]()
       // initialize the derived state as 'normal state' -> each subsequent update of state this dTextVal is derived from
       // will update gc.state with value from executed derived[dTextVal] function
@@ -74,7 +74,7 @@ export function RComponent(config) {
         else {
           dependantSignal = signals.get(dependantSIGD);
         }
-        
+
         // function to update dependant when state key value changes
         const dependantUpdator = () => {
           // TODO: update just a specific dependancy
@@ -82,7 +82,7 @@ export function RComponent(config) {
           const derived = gc.dependants.bind({ state: {...gc.state} })();
           const v = derived[dependantName]();
 
-          // update reactive data 
+          // update reactive data
           dependantSignal[1](v, [])
           // update local state
           gc.state = { ...gc.state, [dependantName]: v }
@@ -97,9 +97,10 @@ export function RComponent(config) {
   // parse html and hydrate with anchors for reactivity
   const documentMountPoint = document.querySelector(config.root)
   const parsedRoot = parse(documentMountPoint.innerHTML);
+  console.log('parsed roo: ', parsedRoot)
   const processedRoot = _parse(parsedRoot, geffects, gc.state)
   // re-write dom as dom w/ anchors
-  documentMountPoint.innerHTML = processedRoot.toString();
+  documentMountPoint.innerHTML = processedRoot.removeWhitespace().toString();
 
   // initial run of all effects
   signals.forEach((signalData) => {
@@ -108,28 +109,28 @@ export function RComponent(config) {
       currdep();
     }
   });
-  
+
   function createUpdator(child) {
     // console.log("creating updator: ", child)
-    const data = child.rawAttrs.split('r-data')[1].split("{")[1].split("}")[0].trim();
+    const data = child.rawAttrs.split('y-data')[1].split("{")[1].split("}")[0].trim();
     const id = Math.random();
-    if(child.rawAttrs.includes('data-rid')) {
+    if(child.rawAttrs.includes('data-yid')) {
       //update id (nested component roots?)
-      const i = child.rawAttrs.split('data-rid="')[1].split('"')[0];
+      const i = child.rawAttrs.split('data-yid="')[1].split('"')[0];
       child.rawAttrs = child.rawAttrs.replaceAll(i, id)
     }
     else {
-      child.rawAttrs += ` data-rid="${id}"`;
+      child.rawAttrs += ` data-yid="${id}"`;
     }
 
     // get sigd
     const sigd = signalNameToSignalIDMap.get(data);
-    if(!sigd) return; // skip iteration for nested r-data possibilities
+    if(!sigd) return; // skip iteration for nested y-data possibilities
 
     const { signal, dependencies } = signals.get(sigd);
     // add manual updator
     const updator = () => {
-      const element = document.querySelector(`[data-rid="${id}"]`)
+      const element = document.querySelector(`[data-yid="${id}"]`)
       element.innerHTML = signal[0]();
     }
 
@@ -138,43 +139,58 @@ export function RComponent(config) {
     signals.set(sigd, { signal, dependencies })
 
   }
-  
+
   function _parse(root) {
     for(let i = 0; i < root.childNodes.length; i ++) {
-      const child = root.childNodes[i]
-
-      if(child.rawAttrs && child.rawAttrs.includes('r-data')) {
-        createUpdator(child)
-      }
-      else if(child.rawAttrs && child.rawAttrs.includes('r-click')) {
-        const handlerName = child.rawAttrs.split('r-click')[1].split("{")[1].split("}")[0].trim();
-  
-        if(Object.keys(geffects).includes(handlerName)) {
-
-          const c = () => {
-            // mutates the local gc.state closure variable, 'internal function state'
-            geffects[handlerName].bind(gc.state)();
-            console.log('calling c for: ', handlerName)
-            // gc.state is updated here
-            // TODO: only update the state that this effect mutates
-            Object.keys(gc.state).forEach((s) => {
-                const signalTextName = s; // create signal w/ provided default
-                const f = signalNameToSignalIDMap.get(signalTextName);
-                const { dependencies, signal } = signals.get(f);
-                signal[1](gc.state[s], dependencies)
-            })
-          }
-          const fid = (Math.random() + 1).toString(36).substring(7);
-  
-          window[`${fid}`] = c;
-          child.rawAttrs += ` onclick="${fid}()"`
+      let child = root.childNodes[i]
+      if(child.rawAttrs) {
+        if(child.rawAttrs.includes('y-data')) {
+          createUpdator(child)
         }
+        const events = [ 'click', 'keydown', 'keyup', 'mouseover', 'mouseout' ];
+
+        for(let i = 0, len = events.length; i < len; i ++) {
+          const ev = events[i];
+
+          if(child.rawAttrs.includes(`y-${ev}`)) {
+            child = bindEvent(child, ev);
+          }
+        }
+        _parse(child)
       }
       else {
         _parse(child)
       }
     }
-  
+
     return root
+  }
+
+  function bindEvent(node, eventName) {
+
+    const handlerName = node.rawAttrs.split(`y-${eventName}`)[1].split("{")[1].split("}")[0].trim();
+
+    if(!Object.keys(geffects).includes(handlerName)) {
+      return;
+    }
+    const fid = (Math.random() + 1).toString(36).substring(7);
+
+    const c = (e) => {
+      // mutates the local gc.state closure variable, 'internal function state'
+      geffects[handlerName].bind(gc.state)(e);
+      console.log('calling c for: ', handlerName, e)
+      // gc.state is updated here
+      // TODO: only update the state that this effect mutates
+      Object.keys(gc.state).forEach((s) => {
+          const signalTextName = s; // create signal w/ provided default
+          const f = signalNameToSignalIDMap.get(signalTextName);
+          const { dependencies, signal } = signals.get(f);
+          signal[1](gc.state[s], dependencies)
+      })
+    }
+
+    window[`${fid}`] = c;
+    node.rawAttrs += ` on${eventName}="${fid}(event)"`;
+    return node
   }
 }
