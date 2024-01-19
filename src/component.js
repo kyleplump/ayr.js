@@ -166,7 +166,6 @@ export function AC(config) {
               else {
                 element.style.display = 'none';
               }
-              // element.style.display = signalValue ? null : 'none';
             }
           }
 
@@ -176,45 +175,43 @@ export function AC(config) {
         // loops
         if(child.rawAttrs.includes('y-for')) {
           const data = child.rawAttrs.split('y-for')[1].split("{")[1].split("}")[0].trim();
-          const stater = data.split('in')[1].trim();
-          const variable = data.split('in')[0].trim();
+          const stateName = data.split('in')[1].trim();
+          const loopvar = data.split('in')[0].trim();
           const id = Math.random();
           child.rawAttrs += ` data-yf="${id}"`;
-          console.log('child: ', child)
 
-
-          const sigd = signalNameToSignalIDMap.get(stater);
+          const sigd = signalNameToSignalIDMap.get(stateName);
           const { signal, dependencies } = signals.get(sigd);
 
           const looperDependency = () => {
             const data = child.rawAttrs.split('data-yf=')[1].split('"')[1];
             const element = document.querySelector(`[data-yf="${data}"]`)
             const values = signal[0]();
-            let newKids = []
+            let modifiedChildNodes = []
 
             child.childNodes.forEach((c) => {
-              if(c.rawAttrs && c.rawAttrs.includes(`y-data="{${variable}}"`)) {
+              if(c.rawAttrs && c.rawAttrs.includes(`y-data="{${loopvar}}"`)) {
                 values.forEach((val) => {
                   if(!c.rawAttrs.includes(`data-yfp="${val}"`)) {
                     const n = c.clone();
                     n.set_content(val);
-                    newKids.push(n);
+                    modifiedChildNodes.push(n);
                   }
                 })
               }
               else {
-                newKids.push(c);
+                modifiedChildNodes.push(c);
               }
             })
-            child.childNodes = newKids;
+            child.childNodes = modifiedChildNodes;
 
             element.innerHTML = child.removeWhitespace().toString();
           }
 
-          // find node with variable
           dependencies.push(looperDependency);
           signals.set(sigd, { signal, dependencies })
         }
+
         const events = [ 'click', 'change', 'keydown', 'keyup', 'mouseover', 'mouseout' ];
 
         for(let i = 0, len = events.length; i < len; i ++) {

@@ -3,10 +3,10 @@ import { resolve } from 'path';
 
 export default defineConfig({
  build: {
-  minify: 'terser',
+  sourcemap: true,
   lib: {
     entry: resolve(__dirname, 'src/component.js'),
-    name: 'Ayr.js',
+    name: 'ayr.js',
     fileName: 'ayr'
   }
  }
