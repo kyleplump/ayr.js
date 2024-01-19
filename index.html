@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
     <script type="module">
-      import { AC } from './src/component.js'
+      import { AC } from './src/component.js';
 
       AC({
         root: '#comp1',
@@ -76,18 +76,15 @@
   </head>
   <body id="body">
     <div id='comp1'>
-      <button id="btn" y-click="{updateCounter}">increment</button>
+      <button id="btn" y-click="{updateCounter}">Increment Value</button>
       <p>
         Counter value:
         <span id="test" y-data="{counter}"></span>
-        doubled:
-        <span y-data="{doubledCounter}"></span>
-        tripled:
-        <span y-data="{tripledCounter}"></span>
+
       </p>
     </div>
 
-    <div id="comp3">
+    <!-- <div id="comp3">
       <p  y-click="{flipShowingValue}">Flip Value</p>
       <input type="checkbox" id="flipper" y-change="{flipShowingValue}"/>
       <p>
@@ -98,6 +95,6 @@
       <div y-for="{v in vals}" style="display: flex;flex-direction: column;">
         <span y-data="{v}">te</span>
       </div>
-    </div>
+    </div> -->
   </body>
 </html>
