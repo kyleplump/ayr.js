@@ -97,7 +97,7 @@ export function AC(config) {
   // parse html and hydrate with anchors for reactivity
   const documentMountPoint = document.querySelector(config.root)
   const parsedRoot = parse(documentMountPoint.innerHTML);
-  console.log('parsed roo: ', parsedRoot)
+
   const processedRoot = _parse(parsedRoot, geffects, gc.state)
   // re-write dom as dom w/ anchors
   documentMountPoint.innerHTML = processedRoot.removeWhitespace().toString();
@@ -133,7 +133,6 @@ export function AC(config) {
       const element = document.querySelector(`[data-yid="${id}"]`)
       element.innerHTML = signal[0]();
     }
-
     if(!dependencies) return;
     dependencies.push(updator);
     signals.set(sigd, { signal, dependencies })
@@ -144,10 +143,79 @@ export function AC(config) {
     for(let i = 0; i < root.childNodes.length; i ++) {
       let child = root.childNodes[i]
       if(child.rawAttrs) {
+        // data binding
         if(child.rawAttrs.includes('y-data')) {
           createUpdator(child)
         }
-        const events = [ 'click', 'keydown', 'keyup', 'mouseover', 'mouseout' ];
+        // conditional rendering
+        if(child.rawAttrs.includes('y-if')) {
+          const data = child.rawAttrs.split('y-if')[1].split("{")[1].split("}")[0].trim();
+          const id = Math.random();
+          child.rawAttrs += ` data-yif="${id}"`
+
+          const sigd = signalNameToSignalIDMap.get(data);
+          const { signal, dependencies } = signals.get(sigd);
+
+          const visibleDependency = () => {
+            const signalValue = signal[0]();
+            const element = document.querySelector(`[data-yif="${id}"]`);
+            if(element) {
+              if(signalValue) {
+                element.style.removeProperty('display')
+              }
+              else {
+                element.style.display = 'none';
+              }
+              // element.style.display = signalValue ? null : 'none';
+            }
+          }
+
+          dependencies.push(visibleDependency);
+          signals.set(sigd, { signal, dependencies })
+        }
+        // loops
+        if(child.rawAttrs.includes('y-for')) {
+          const data = child.rawAttrs.split('y-for')[1].split("{")[1].split("}")[0].trim();
+          const stater = data.split('in')[1].trim();
+          const variable = data.split('in')[0].trim();
+          const id = Math.random();
+          child.rawAttrs += ` data-yf="${id}"`;
+          console.log('child: ', child)
+
+
+          const sigd = signalNameToSignalIDMap.get(stater);
+          const { signal, dependencies } = signals.get(sigd);
+
+          const looperDependency = () => {
+            const data = child.rawAttrs.split('data-yf=')[1].split('"')[1];
+            const element = document.querySelector(`[data-yf="${data}"]`)
+            const values = signal[0]();
+            let newKids = []
+
+            child.childNodes.forEach((c) => {
+              if(c.rawAttrs && c.rawAttrs.includes(`y-data="{${variable}}"`)) {
+                values.forEach((val) => {
+                  if(!c.rawAttrs.includes(`data-yfp="${val}"`)) {
+                    const n = c.clone();
+                    n.set_content(val);
+                    newKids.push(n);
+                  }
+                })
+              }
+              else {
+                newKids.push(c);
+              }
+            })
+            child.childNodes = newKids;
+
+            element.innerHTML = child.removeWhitespace().toString();
+          }
+
+          // find node with variable
+          dependencies.push(looperDependency);
+          signals.set(sigd, { signal, dependencies })
+        }
+        const events = [ 'click', 'change', 'keydown', 'keyup', 'mouseover', 'mouseout' ];
 
         for(let i = 0, len = events.length; i < len; i ++) {
           const ev = events[i];
@@ -178,7 +246,7 @@ export function AC(config) {
     const c = (e) => {
       // mutates the local gc.state closure variable, 'internal function state'
       geffects[handlerName].bind(gc.state)(e);
-      console.log('calling c for: ', handlerName, e)
+      console.log('calling c for: ', handlerName, e, gc.state)
       // gc.state is updated here
       // TODO: only update the state that this effect mutates
       Object.keys(gc.state).forEach((s) => {

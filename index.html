@@ -32,24 +32,43 @@
         }
       })
 
+      // AC({
+      //   root: '#comp2',
+      //   state: {
+      //     input: '',
+      //     secret: 'this is public value'
+      //   },
+      //   effects: function() {
+      //     return {
+      //       mirrorInput: (e) => {
+      //         console.log('in calback: ', e)
+      //         this.state.input = e.target.value;
+      //       },
+      //       revealSecret: () => {
+      //         this.state.secret = 'SSHHHHHH! SECRET!'
+      //       },
+      //       hideSecret: () => [
+      //         this.state.secret = 'this is public value'
+      //       ]
+      //     }
+      //   }
+      // })
+
       AC({
-        root: '#comp2',
+        root: '#comp3',
         state: {
-          input: '',
-          secret: 'this is public value'
+          showingValue: false,
+          vals: [ 'first value', 'second value', 'third super ocol value' ]
         },
         effects: function() {
           return {
-            mirrorInput: (e) => {
-              console.log('in calback: ', e)
-              this.state.input = e.target.value;
+            flipShowingValue: () => {
+              // this.showingValue = true
+              this.state.showingValue = !this.state.showingValue;
             },
-            revealSecret: () => {
-              this.state.secret = 'SSHHHHHH! SECRET!'
-            },
-            hideSecret: () => [
-              this.state.secret = 'this is public value'
-            ]
+            addFourthVal: () => {
+              this.state.vals = [ ...this.state.vals, 'fourth added value' ]
+            }
           }
         }
       })
@@ -57,26 +76,29 @@
     </script>
   </head>
   <body id="body">
-   <div id='comp1'>
-    <button id="btn" y-click="{updateCounter}">increment</button>
-    <p>
-      Counter value:
-      <span id="test" y-data="{counter}"></span>
-      doubled:
-      <span y-data="{doubledCounter}"></span>
-      tripled:
-      <span y-data="{tripledCounter}"></span>
-    </p>
-   </div>
-
-    <div id='comp2'>
-      <input y-keyup="{mirrorInput}" type="text" />
+    <div id='comp1'>
+      <button id="btn" y-click="{updateCounter}">increment</button>
       <p>
-        Your input is: <span y-data="{input}"></span>
+        Counter value:
+        <span id="test" y-data="{counter}"></span>
+        doubled:
+        <span y-data="{doubledCounter}"></span>
+        tripled:
+        <span y-data="{tripledCounter}"></span>
       </p>
-      <p y-mouseover="{revealSecret}" y-mouseout="{hideSecret}" style="background-color: lightblue;">
-        Message:       <span y-data="{secret}"></span>
+    </div>
+
+    <div id="comp3">
+      <p  y-click="{flipShowingValue}">Flip Value</p>
+      <input type="checkbox" id="flipper" y-change="{flipShowingValue}"/>
+      <p>
+        Is Showing Value?
       </p>
+      <span y-if="{showingValue}">Yes!</span>
+      <button y-click="{addFourthVal}">add fourth</button>
+      <div y-for="{v in vals}" style="display: flex;flex-direction: column;">
+        <span y-data="{v}">te</span>
+      </div>
     </div>
   </body>
 </html>
