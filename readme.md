@@ -6,11 +6,16 @@ Ayr.js is a reactivity model designed for simplicity.  No build tools.  No templ
 
 ## Installation
 
-Install my-project with npm
+Import `Ayr.js` directly into your HTML from a CDN:
+```html
+<script src="https://unpkg.com/ayr.js"></script>
+```
+
+Or install it with npm:
 
 ```bash
-  npm install my-project
-  cd my-project
+  npm install ayr.js
+  yarn add ayr.js
 ```
 
 ## Usage/Examples
@@ -66,6 +71,7 @@ The full example:
 ```javascript
 <!Doctype html>
 <head>
+    <script src="https://unpkg.com/ayr.js"></script>
     <script>
         AC({
             root: '#my_component',
@@ -102,6 +108,7 @@ The full example:
 ```javascript
 <!Doctype html>
 <head>
+    <script src="https://unpkg.com/ayr.js"></script>
     <script>
         AC({
             root: '#my_component',
@@ -150,6 +157,7 @@ The `y-if` directive can be passed a state variable, and that DOM node will only
 ```javascript
 <!Doctype html>
 <head>
+    <script src="https://unpkg.com/ayr.js"></script>
     <script>
         AC({
             root: '#my_component',
@@ -183,6 +191,7 @@ The `y-for` directive can be passed an iterable state variable, allowing you to 
 ```javascript
 <!Doctype html>
 <head>
+    <script src="https://unpkg.com/ayr.js"></script>
     <script>
         AC({
             root: '#my_component',
