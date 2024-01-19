@@ -234,7 +234,9 @@ Please open a pull request or open an issue to collaborate.
 
 
 ## Notes
-`Ayr.js` is not yet ready for use in production.  This is an early stage project and the API is still subject to breaking changes.
+`Ayr.js` is not yet ready for use in production.  This is an early stage project and the API is still subject to breaking changes.  If you like `Ayr.js` check out the frameworks that inspired it:
+- [Alpine.js](https://alpinejs.dev/)
+- [Solid.js](https://www.solidjs.com/)
 
 ## Authors
 
