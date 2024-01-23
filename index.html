@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
     <script type="module">
-      import { AC } from './src/component.js';
+      import { AC } from './src/ayr.js';
 
       AC({
         root: '#comp1',
@@ -54,23 +54,23 @@
       //   }
       // })
 
-      AC({
-        root: '#comp3',
-        state: {
-          showingValue: false,
-          vals: [ 'first value', 'second value', 'third super ocol value' ]
-        },
-        effects: function() {
-          return {
-            flipShowingValue: () => {
-              this.state.showingValue = !this.state.showingValue;
-            },
-            addFourthVal: () => {
-              this.state.vals = [ ...this.state.vals, 'fourth added value' ]
-            }
-          }
-        }
-      })
+      // AC({
+      //   root: '#comp3',
+      //   state: {
+      //     showingValue: false,
+      //     vals: [ 'first value', 'second value', 'third super ocol value' ]
+      //   },
+      //   effects: function() {
+      //     return {
+      //       flipShowingValue: () => {
+      //         this.state.showingValue = !this.state.showingValue;
+      //       },
+      //       addFourthVal: () => {
+      //         this.state.vals = [ ...this.state.vals, 'fourth added value' ]
+      //       }
+      //     }
+      //   }
+      // })
 
     </script>
   </head>

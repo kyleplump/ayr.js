@@ -5,9 +5,10 @@ export default defineConfig({
  build: {
   sourcemap: true,
   lib: {
-    entry: resolve(__dirname, 'src/component.js'),
+    entry: resolve(__dirname, 'src/ayr.js'),
     name: 'ayr.js',
-    fileName: 'ayr'
+    fileName: 'ayr',
+    formats: ['es']
   }
  }
 })

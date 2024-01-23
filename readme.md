@@ -26,7 +26,7 @@ The core of `Ayr.js` is the 'Ayr Component' (`AC`).  Ayr components are function
 | :-------- | :------------------------- |
 | `root` | **Required**. Where the Ayr component should mount in the DOM |
 | `state` | Reactive state variables |
-| `effects` | Function that returns an functions that mutate `state` variables |
+| `effects` | Function that returns a function that mutate `state` variables |
 
 
 An example Ayr component:
@@ -225,7 +225,7 @@ The `y-for` directive can be passed an iterable state variable, allowing you to 
 #### Ayr Directives
 
 
-| AC option | Description                |
+| Directive | Description                |
 | :-------- | :------------------------- |
 | `y-data` | Binds node to AC state variable |
 | `y-[event]` | Binds DOM `event` on the node to an AC effect (e.g.: `y-click`, `y-change`). See below for supported events |
@@ -244,8 +244,8 @@ Please open a pull request or open an issue to collaborate.
 
 ## Notes
 `Ayr.js` is not yet ready for use in production.  This is an early stage project and the API is still subject to breaking changes.  If you like `Ayr.js` check out the frameworks that inspired it:
-- [Alpine.js](https://alpinejs.dev/)
 - [Solid.js](https://www.solidjs.com/)
+- [Alpine.js](https://alpinejs.dev/)
 
 ## Authors
 

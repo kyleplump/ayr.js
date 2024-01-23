@@ -111,7 +111,6 @@ export function AC(config) {
   });
 
   function createUpdator(child) {
-    // console.log("creating updator: ", child)
     const data = child.rawAttrs.split('y-data')[1].split("{")[1].split("}")[0].trim();
     const id = Math.random();
     if(child.rawAttrs.includes('data-yid')) {
