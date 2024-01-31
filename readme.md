@@ -8,7 +8,9 @@ Ayr.js is a reactivity model designed for simplicity.  No build tools.  No templ
 
 Import `Ayr.js` directly into your HTML from a CDN:
 ```html
-<script src="https://unpkg.com/ayr.js"></script>
+<script type="module">
+    import { AC } from 'https://unpkg.com/ayr.js';
+</script>
 ```
 
 Or install it with npm:
@@ -71,8 +73,8 @@ The full example:
 ```javascript
 <!Doctype html>
 <head>
-    <script src="https://unpkg.com/ayr.js"></script>
-    <script>
+    <script type="module">
+        import { AC } from 'https://unpkg.com/ayr.js';
         AC({
             root: '#my_component',
             state: {
@@ -108,8 +110,8 @@ The full example:
 ```javascript
 <!Doctype html>
 <head>
-    <script src="https://unpkg.com/ayr.js"></script>
-    <script>
+    <script type="module">
+        import { AC } from 'https://unpkg.com/ayr.js';
         AC({
             root: '#my_component',
             state: {
@@ -157,8 +159,8 @@ The `y-if` directive can be passed a state variable, and that DOM node will only
 ```javascript
 <!Doctype html>
 <head>
-    <script src="https://unpkg.com/ayr.js"></script>
-    <script>
+    <script type="module">
+        import { AC } from 'https://unpkg.com/ayr.js';
         AC({
             root: '#my_component',
             state: {
@@ -191,8 +193,8 @@ The `y-for` directive can be passed an iterable state variable, allowing you to 
 ```javascript
 <!Doctype html>
 <head>
-    <script src="https://unpkg.com/ayr.js"></script>
-    <script>
+    <script type="module">
+        import { AC } from 'https://unpkg.com/ayr.js';
         AC({
             root: '#my_component',
             state: {
