@@ -1,7 +1,7 @@
 {
   "name": "ayr.js",
   "description": "A build tool free reactivity model designed for simplicity and ease of use.",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "Kyle Plump",
   "license": "MIT",
   "repository": {
