@@ -110,6 +110,8 @@ export function AC(config) {
     }
   });
 
+  console.log('-- Ayr Mount --')
+
   function createUpdator(child) {
     const data = child.rawAttrs.split('y-data')[1].split("{")[1].split("}")[0].trim();
     const id = Math.random();
@@ -242,7 +244,6 @@ export function AC(config) {
     const c = (e) => {
       // mutates the local gc.state closure variable, 'internal function state'
       geffects[handlerName].bind(gc.state)(e);
-      console.log('calling c for: ', handlerName, e, gc.state)
       // gc.state is updated here
       // TODO: only update the state that this effect mutates
       Object.keys(gc.state).forEach((s) => {
@@ -253,8 +254,8 @@ export function AC(config) {
       })
     }
 
-    window[`${fid}`] = c;
-    node.rawAttrs += ` on${eventName}="${fid}(event)"`;
+    window[`f${fid}`] = c;
+    node.rawAttrs += ` on${eventName}="f${fid}(event)"`;
     return node
   }
 }

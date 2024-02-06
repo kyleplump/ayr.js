@@ -4,7 +4,6 @@ export function createSignal(initialValue) {
     const id = Math.random();
   
     function val() {
-      console.log("retrieving val", _val)
       return _val;
     }
   
@@ -13,7 +12,6 @@ export function createSignal(initialValue) {
     // if ever publically available
     function setVal(newValue, dependencies) {
       _val = newValue;
-      console.log('setting value', id, newValue)
       // eval deps
       for(let i = 0, len = dependencies.length; i < len; i ++) {
         const currdep = dependencies[i]
